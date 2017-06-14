@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>models/bunny.obj</file>
+        <file>ShaderUniformDelegateManager.qml</file>
+        <file>MinMaxSlider.qml</file>
+        <file>ShaderTreeView.qml</file>
+    </qresource>
+</RCC>
