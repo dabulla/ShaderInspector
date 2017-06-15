@@ -15,11 +15,11 @@ public:
         ParameterName = Qt::DisplayRole,
         ParameterType = Qt::ToolTipRole,
         ParameterDatatype = Qt::UserRole,
-        ParameterValue = Qt::UserRole + 1,
         ParameterUniformLocation = Qt::UserRole + 2,
         ParameterIsSubroutine = Qt::UserRole + 3,
         ParameterSubroutineValues = Qt::UserRole + 4,
-        ParameterData = Qt::UserRole + 5 // This is used for creation of ui elements
+        ParameterData = Qt::UserRole + 5, // This is used for creation of ui elements
+        ParameterFound = Qt::UserRole + 6 // Is the parameter found in current shader
     };
     Q_ENUM(ShaderParameterRoles)
 
@@ -30,6 +30,7 @@ public slots:
     void syncModel(const ShaderParameterMap &parameters);
     QHash<int, QByteArray> roleNames() const;
 private:
+    void markFound(QAbstractItemModel* model, QModelIndex parent = QModelIndex());
     QHash<int, QByteArray> m_roleNameMapping;
     ShaderParameterMap m_parameters;
     friend class Shader;

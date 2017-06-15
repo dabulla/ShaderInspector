@@ -10,6 +10,11 @@
 #include "cameracontroller.h"
 #include "camera.h"
 
+void onMessageLogged(const QOpenGLDebugMessage &msg)
+{
+    qDebug() << msg;
+}
+
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
@@ -25,15 +30,13 @@ int main(int argc, char *argv[])
     qmlRegisterType<Camera>("fhac", 1, 0, "Camera");
     qmlRegisterType<CameraController>("fhac", 1, 0, "CameraController");
     QQuickView view;
+    view.setWidth(1600);
+    view.setHeight(900);
     QOpenGLDebugLogger logger;
     QObject::connect( &view, &QQuickWindow::sceneGraphInitialized, [&view, &logger]()
     {
         if ( logger.initialize() ) {
-            QObject::connect( &logger, &QOpenGLDebugLogger::messageLogged,
-                         [](const QOpenGLDebugMessage &msg)
-            {
-                qDebug() << msg;
-            });
+            QObject::connect( &logger, &QOpenGLDebugLogger::messageLogged, onMessageLogged);
             logger.startLogging( QOpenGLDebugLogger::SynchronousLogging );
             logger.enableMessages();
             QVector<uint> disabledMessages;

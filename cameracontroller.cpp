@@ -24,8 +24,9 @@ CameraController::CameraController(QObject *parent)
      m_leftButtonPressed(false),
      m_middleButtonPressed(false),
      m_rightButtonPressed(false),
-     m_keepUpVector( false ),
-     m_translationOption(Camera::DontTranslateViewCenter)
+     m_keepUpVector( true ),
+     m_translationOption(Camera::DontTranslateViewCenter),
+     m_eventSource( nullptr )
 {
 }
 
@@ -49,7 +50,7 @@ void CameraController::update(const float elapsedSeconds)
 {
     if(m_movementDirty)
     {
-        const float accel = 25.0f + m_extraSpeed * 40.0f;
+        const float accel = 1.0f + m_extraSpeed * 4.0f;
         m_acceleration.setX( m_movingRight - m_movingLeft );
         m_acceleration.setY( m_movingUp - m_movingDown );
         m_acceleration.setZ( m_movingFore - m_movingBack );
@@ -223,8 +224,8 @@ void CameraController::mouseMoveEvent( QMouseEvent* e )
     if ( m_leftButtonPressed )
     {
         m_mouse = e->pos();
-        float dx = 0.2f * ( m_mouse.x() - m_mousePrev.x() );
-        float dy = 0.2f * ( m_mouse.y() - m_mousePrev.y() );
+        float dx = -0.2f * ( m_mouse.x() - m_mousePrev.x() );
+        float dy = -0.2f * ( m_mouse.y() - m_mousePrev.y() );
         m_mousePrev = m_mouse;
 
         if(m_translationOption == Camera::DontTranslateViewCenter)

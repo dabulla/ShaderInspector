@@ -5,5 +5,10 @@
         <file>ShaderUniformDelegateManager.qml</file>
         <file>MinMaxSlider.qml</file>
         <file>ShaderTreeView.qml</file>
+        <file>Settings.qml</file>
+        <file>textures/75692-diffuse.jpg</file>
+        <file>textures/75692-height.png</file>
+        <file>textures/75692-normal.jpg</file>
+        <file>textures/75692-specular.png</file>
     </qresource>
 </RCC>

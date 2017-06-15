@@ -5,6 +5,7 @@ in vec3 position;
 in vec3 color;
 
 uniform vec3 finalColor;
+uniform float time;
 
 out vec4 fragColor;
 
@@ -16,5 +17,5 @@ void main()
 //    float diffuse = max(dot(s, n), 0.0);
 //    fragColor = vec4(diffuse * finalColor, 1.0);
 //    fragColor = vec4(0.0, 0.0, 0.0, 1.0);
-    fragColor = vec4(color, 1.0);
+    fragColor = vec4(color, 1.0) * (sin(time * 30)*0.4+0.6);
 }

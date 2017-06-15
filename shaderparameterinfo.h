@@ -20,6 +20,7 @@ class ShaderParameterInfo : public QObject
     Q_PROPERTY(bool isSubroutine READ isSubroutine NOTIFY isSubroutineChanged)
     Q_PROPERTY(QStringList subroutineValues READ subroutineValues NOTIFY subroutineValuesChanged)
     Q_PROPERTY(int _subroutineShaderType READ _subroutineShaderType WRITE set_subroutineShaderType NOTIFY _subroutineShaderTypeChanged)
+    Q_PROPERTY(bool found READ found WRITE setFound NOTIFY foundChanged) //This is an experimental feature for parameters in the gui which are not in the shader
 public:
 
     enum ShaderParameterType {
@@ -144,19 +145,15 @@ public:
     QString name() const;
     QVariant type() const;
     QVariant datatype() const;
-    QVariant value() const;
     int uniformLocation() const;
     bool isSubroutine() const;
     QStringList subroutineValues() const;
+    QString qmlTypename() const;
+    int _subroutineShaderType() const;
 
     static QVariant::Type fromGLDatatype(ShaderParameterDatatype type);
-    QString qmlTypename() const;
 
-    QStringList m_subroutineValues;
-    int _subroutineShaderType() const
-    {
-        return m__subroutineShaderType;
-    }
+    bool found() const;
 
 public slots:
     void setName(QString name);
@@ -165,15 +162,9 @@ public slots:
     void setUniformLocation(int uniformLocation);
     void setIsSubroutine(bool isSubroutine);
     void setSubroutineValues(QStringList subroutineValues);
+    void set_subroutineShaderType(int _subroutineShaderType);
 
-    void set_subroutineShaderType(int _subroutineShaderType)
-    {
-        if (m__subroutineShaderType == _subroutineShaderType)
-            return;
-
-        m__subroutineShaderType = _subroutineShaderType;
-        emit _subroutineShaderTypeChanged(m__subroutineShaderType);
-    }
+    void setFound(bool found);
 
 signals:
     void nameChanged(QString name);
@@ -183,17 +174,19 @@ signals:
     void isSubroutineChanged(bool isSubroutine);
     void subroutineValuesChanged(QStringList subroutineValues);
     void qmlTypenameChanged(QString qmlTypename);
-
     void _subroutineShaderTypeChanged(int _subroutineShaderType);
+
+    void foundChanged(bool found);
 
 private:
     QString m_name;
     ShaderParameterType m_type;
     ShaderParameterDatatype m_datatype;
-    QVariant    m_value;
     int         m_uniformLocation;
     bool        m_isSubroutine;
+    QStringList m_subroutineValues;
     int m__subroutineShaderType;
+    bool m_found;
 };
 
 Q_DECLARE_METATYPE(ShaderParameterInfo)

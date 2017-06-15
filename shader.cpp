@@ -6,7 +6,11 @@
 
 class ShaderBackend : public QQuickFramebufferObject::Renderer
 {
-
+public:
+    ShaderBackend()
+        : m_window( nullptr)
+        , m_shaderCreated( false )
+    {}
     // Renderer interface
 protected:
     void render()
@@ -49,12 +53,13 @@ protected:
             m_computeShader = modelItem->computeShader();
             reload = true;
         }
-        if(reload)
+        if(reload || modelItem->m_reloadScheduled)
         {
             reloadShader();
             modelItem->setShaderProgram( &m_shaderProgram );
             QMetaObject::invokeMethod(modelItem->m_model, "syncModel", Qt::QueuedConnection, Q_ARG(ShaderParameterMap, m_parameters));
-
+            modelItem->emitShaderUpdated();
+            modelItem->m_reloadScheduled = false;
         }
     }
 
@@ -62,7 +67,15 @@ private:
 
     void reloadShader()
     {
-        m_shaderProgram.create();
+        if(m_shaderCreated)
+        {
+            m_shaderProgram.removeAllShaders();
+        }
+        else
+        {
+            m_shaderProgram.create();
+            m_shaderCreated = true;
+        }
         if ( !m_shaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, m_vertexShader ) ) {
             qCritical() << QObject::tr( "Could not compile vertex shader. Log:" ) << m_shaderProgram.log();
             return;
@@ -104,7 +117,12 @@ private:
             qWarning() << "Could not initialize gl functions";
             return;
         }
+        if(!m_shaderProgram.link())
+        {
+            qWarning() << "Could not link shader program";
+        }
         m_shaderProgram.bind();
+        QList<QString> allFoundUniforms;
         GLint total = -1;
         glFuncs->glGetProgramiv( m_shaderProgram.programId(), GL_ACTIVE_UNIFORMS, &total );
         for(int i=0; i<total; ++i)
@@ -122,7 +140,7 @@ private:
             {
                 continue;
             }
-
+            allFoundUniforms.append(name);
             ShaderParameterInfoBackend *theUniform;
             if(m_parameters.contains(name))
             {
@@ -181,6 +199,7 @@ private:
                 {
                     continue;
                 }
+                allFoundUniforms.append(name);
                 ShaderParameterInfoBackend *theUniform;
                 if(m_parameters.contains(name))
                 {
@@ -205,6 +224,11 @@ private:
                 }
             }
         }
+        QMutableHashIterator<QString, ShaderParameterInfoBackend> iter(m_parameters);
+        while (iter.hasNext()) {
+            if (!allFoundUniforms.contains(iter.next()->m_name))
+                iter.remove();
+        }
     }
 
     QOpenGLShaderProgram m_shaderProgram;
@@ -217,16 +241,34 @@ private:
     QString m_tessellationEvaluationShader;
     QString m_fragmentShader;
     QString m_computeShader;
+    bool m_shaderCreated;
 };
 
 Shader::Shader(QQuickItem *parent)
     : QQuickFramebufferObject( parent )
     , m_shaderProgram( nullptr )
+    , m_reloadScheduled( false )
 {
     qRegisterMetaType<QOpenGLShaderProgram*>("ShaderProgram");
     qRegisterMetaType<QHash<QString, ShaderParameterInfoBackend> >("ShaderParameterMap");
 
     m_model = new ShaderModel(this);
+}
+
+void Shader::reload()
+{
+    m_reloadScheduled = true;
+    update();
+}
+
+void Shader::emitShaderUpdated()
+{
+    emit shaderUpdated();
+}
+
+bool Shader::isReloading()
+{
+    return m_reloadScheduled;
 }
 
 QString Shader::vertexShader() const

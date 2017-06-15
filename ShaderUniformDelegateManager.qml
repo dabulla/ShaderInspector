@@ -8,8 +8,7 @@ Item {
     id: root
     // For usage in a TableView. This needs styleData
     property alias autoSelectComponent: autoSelectComponent
-    readonly property var parameters: []
-    property var target: root
+    property var target
     property string parametersProperty: "parameters"
 
     function heightOfType(datatype, isSubroutine) {
@@ -40,19 +39,19 @@ Item {
         }
     }
 
-    function sync() {
-        for (var i in root.target[root.parametersProperty]) {
-            root.parameterChange(root.target[root.parametersProperty][i].name, root.target[root.parametersProperty][i].value)
-        }
+    Component {
+        id: shaderParameterComponent
+        ShaderParameter {}
     }
-
-    signal parameterAddedOrRemoved()
-    signal parameterChange(string name, var value)
     Item {
         id: priv
         function setParameter(name, value, typename) {
             if( typeof value === "number" && isNaN(value)) return
             if( value === undefined) return
+            if( root.target === undefined) {
+                console.error("no target for uniform delegate manager")
+                return
+            }
             var found = false
             for (var i in root.target[root.parametersProperty]) {
                 if ( root.target[root.parametersProperty][i].name === name ) {
@@ -62,10 +61,8 @@ Item {
                 }
             }
             if (!found) {
-                root.target[root.parametersProperty].push({"name": name, "value": value })
-                root.parameterAddedOrRemoved()
-            } else {
-                root.parameterChange(name, value)
+                var param = shaderParameterComponent.createObject(root.target, {"name": name, "value": value })
+                root.target[root.parametersProperty].push(param)
             }
         }
     }
@@ -120,6 +117,8 @@ Item {
     Component {
         id: subroutineChooser
         ColumnLayout {
+            anchors.left: parent.left
+            anchors.right: parent.right
             id: comp
             property string name
             property string qmlTypename
@@ -129,10 +128,10 @@ Item {
                 font.capitalization: Font.Capitalize
             }
             ComboBox {
+                Layout.fillWidth: true
                 id: subroutineCb
                 model: subroutineValues
                 onCurrentTextChanged: {
-                    console.log("DBG: set:" + currentIndex)
                     priv.setParameter(name, currentIndex, qmlTypename);
                 }
                 textRole: ""
@@ -146,6 +145,8 @@ Item {
             anchors.left: parent.left
             anchors.right: parent.right
             property string name
+            property bool found
+            enabled: found
             property string qmlTypename
             Component.onCompleted: priv.setParameter(name, value, qmlTypename);
             onValueChanged: priv.setParameter(name, value, qmlTypename);
@@ -185,7 +186,7 @@ Item {
     }
 
     Component {
-        id:defaultVec3Control
+        id: defaultVec3Control
         ColumnLayout {
             id: comp
             anchors.left: parent.left
@@ -226,7 +227,7 @@ Item {
         }
     }
     Component {
-        id:defaultVec4Control
+        id: defaultVec4Control
         ColumnLayout {
             anchors.left: parent.left
             anchors.right: parent.right

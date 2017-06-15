@@ -15,9 +15,10 @@ Model3DRenderer::Model3DRenderer()
     , m_indices( QOpenGLBuffer::IndexBuffer )
     , m_vertexCount( 0 )
     , m_indexCount( 0 )
+    , m_shader( nullptr )
     , m_funcs( nullptr )
     , m_camera( nullptr )
-    , m_drawPoints( false )
+    , m_primitiveType( Model3D::Triangles )
     , m_tesselationEnabled( false )
     , m_isInstanced( false )
     , m_vertexCountPerPrimitive( 0 )
@@ -32,6 +33,10 @@ Model3DRenderer::~Model3DRenderer()
     if(m_vertices != nullptr )
     {
         delete m_vertices;
+    }
+    for(auto iter=m_textures.begin(); iter!= m_textures.end(); ++iter)
+    {
+        delete *iter;
     }
 }
 
@@ -57,8 +62,8 @@ void Model3DRenderer::synchronize(QQuickFramebufferObject *item)
         }
         m_initializedFromItem = true;
     }
-    m_drawPoints = modelItem->drawPoints();
-    if(modelItem->shader()->shaderProgram())
+    m_primitiveType = modelItem->primitiveType();
+    if(modelItem->shader()->shaderProgram() && !modelItem->shader()->isReloading())
     {
         m_tmpShader = modelItem->shader();
         if(m_shader != modelItem->shader()->shaderProgram())
@@ -73,13 +78,11 @@ void Model3DRenderer::synchronize(QQuickFramebufferObject *item)
             m_camera = modelItem->m_camera;
             updateCameraParameters(modelItem->shader());
         }
-        while(!modelItem->m_updates.empty())
+        for ( auto iter = modelItem->m_updates.cbegin(); iter != modelItem->m_updates.cend(); ++iter)
         {
-            QPair<const ShaderParameterInfoBackend *, QVariant> &parameterAndValue = modelItem->m_updates.first();
-            qDebug() << "DBG: updated" << parameterAndValue.first->m_name << " = " << parameterAndValue.second;
-            updateParameter(parameterAndValue.first, parameterAndValue.second);
-            modelItem->m_updates.removeFirst();
+            updateParameter(iter->first, iter->second);
         }
+        modelItem->m_updates.clear();
         m_shader->release();
     }
     modelItem->update();
@@ -144,7 +147,7 @@ void Model3DRenderer::reinitializeFromVertexdata()
     GLfloat *positionsGpu = static_cast<GLfloat*>(vaPosition->m_buffer.map( QOpenGLBuffer::WriteOnly ));
 
     //TODO: name of standard texture coordinates
-    VertexAttribute *vaTexCoord = new VertexAttribute("vertexTexture1", VertexAttribute::Vector2);
+    VertexAttribute *vaTexCoord = new VertexAttribute("vertexTexCoord", VertexAttribute::Vector2);
     vaTexCoord->m_buffer.create();
     vaTexCoord->m_buffer.setUsagePattern( QOpenGLBuffer::StaticDraw );
     vaTexCoord->m_buffer.bind();
@@ -369,7 +372,6 @@ void Model3DRenderer::updateParameter(const ShaderParameterInfoBackend *uniformI
     if( uniformInfo->m_isSubroutine )
     {
         QVariant valueCopy(value);
-        //Every frame all subroutines must be set. Thus, subroutines are saved in lists
         if(! value.isValid() )
         {
             if(uniformInfo->m_subroutineValues.empty())
@@ -377,12 +379,12 @@ void Model3DRenderer::updateParameter(const ShaderParameterInfoBackend *uniformI
                 qDebug() << "No values possible for Uniform subroutine" << uniformInfo->m_name;
                 return;
             }
-            valueCopy = QVariant::fromValue(0); //TODO: this must be a string? (see lines below)
+            valueCopy = QVariant::fromValue(0);
         }
-        GLuint subroutineIndex = m_funcs->glGetSubroutineIndex( m_shader->programId(),
-                                       uniformInfo->m__subroutineShaderType,
-                                       valueCopy.toString().toStdString().c_str() );
-        m_subroutines[ uniformInfo->m__subroutineShaderType ].replace(uniformInfo->m_uniformLocation, subroutineIndex);
+//        GLuint subroutineIndex = m_funcs->glGetSubroutineIndex( m_shader->programId(),
+//                                       uniformInfo->m__subroutineShaderType,
+//                                       valueCopy.toString().toStdString().c_str() );
+        m_subroutines[ uniformInfo->m__subroutineShaderType ][uniformInfo->m_uniformLocation] = value.toInt();//subroutineIndex;
     }
     else
     {
@@ -413,8 +415,14 @@ void Model3DRenderer::updateParameter(const ShaderParameterInfoBackend *uniformI
             m_shader->setUniformValue( uniformInfo->m_uniformLocation, value.toBool());
             break;
         case QVariant::Image:
-            //not yet supported
+        {
+            QString filename(value.toString());
+            QImage image(filename);
+            QOpenGLTexture *texture = new QOpenGLTexture(image.mirrored());
+            m_textures.push_back(texture);
+            m_shader->setUniformValue( uniformInfo->m_uniformLocation, m_textures.length()-1);
             break;
+        }
         default:
             Q_ASSERT( false );
             break;
@@ -439,6 +447,7 @@ void Model3DRenderer::render()
 {
     if(!m_funcs) return;
     if(!m_shader) return;
+    if(!m_shader->isLinked()) return;
     if(m_reinitializeFromVertexdata)
     {
         reinitializeFromVertexdata();
@@ -447,7 +456,6 @@ void Model3DRenderer::render()
     if(!m_vertexdataInitialized) return;
     if(!m_vao.isCreated())
     {
-
         // create vao:
         // Vao saves vertexbuffer/shader state.
         // this is done once on initialisation, later only the vao needs to be "bound".
@@ -463,7 +471,7 @@ void Model3DRenderer::render()
             if(loc != -1)
             {
                 // bind the buffer (e.g. position)
-                m_isInstanced |= va->divisor(); // if divisor is not always 0, instancing is active
+                m_isInstanced |= (va->divisor() != 0); // if divisor is not always 0, instancing is active
                 va->m_buffer.bind();
                 int size;
                 switch( va->dataType() )
@@ -510,70 +518,17 @@ void Model3DRenderer::render()
 
     m_funcs->glDepthMask(true);
 
-    m_funcs->glClearColor(0.0,0.5,0.5,0.8);
+    m_funcs->glClearColor(0.0f,0.5f,0.5f,0.8f);
     m_funcs->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // Called with the FBO bound and the viewport set.
 
     m_shader->bind();
-//    updateCameraParameters(m_tmpShader);
-//    foreach( QmlShaderUniform *unif, m_updates)
-//    {
-//        if( unif->isSubroutine() )
-//        {
-//            //Every frame all subroutines must be set. Thus, subroutines are saved in lists
-//            if(! unif->value().isValid() )
-//            {
-//                if(unif->subroutineValues().empty())
-//                {
-//                    continue;
-//                }
-//                unif->setValue( unif->subroutineValues().at(0) );
-//            }
-//            GLuint subroutineIndex = m_funcs->glGetSubroutineIndex( m_shader->programId(),
-//                                           unif->_subroutineShaderType(),
-//                                           unif->value().toString().toStdString().c_str() );
-//            m_qmlShaderProperties.m_subroutines[ unif->_subroutineShaderType() ].replace(unif->m_uniformLocation, subroutineIndex);
-//        }
-//        else
-//        {
-//            switch (QmlShaderUniform::fromGLType(unif->type())) {
-//            case QVariant::Double:
-//                m_shader->setUniformValue( unif->m_uniformLocation, unif->value().toFloat() );
-//                break;
-//            case QVariant::Vector2D:
-//                m_shader->setUniformValue( unif->m_uniformLocation, qvariant_cast<QVector2D>( unif->value() ));
-//                break;
-//            case QVariant::Vector3D:
-//                m_shader->setUniformValue( unif->m_uniformLocation, qvariant_cast<QVector3D>( unif->value() ));
-//                break;
-//            case QVariant::Vector4D:
-//                m_shader->setUniformValue( unif->m_uniformLocation, qvariant_cast<QVector4D>( unif->value() ));
-//                break;
-//            case QVariant::Int:
-//                m_shader->setUniformValue( unif->m_uniformLocation, unif->value().toInt());
-//                break;
-//            case QVariant::Matrix4x4:
-//                m_shader->setUniformValue( unif->m_uniformLocation, qvariant_cast<QMatrix4x4>( unif->value() ));
-//                break;
-//            case QVariant::Matrix: // 3x3 does not exist, lets try, it's most common type in GLSL:
-//                m_shader->setUniformValue( unif->m_uniformLocation, qvariant_cast<QMatrix3x3>( unif->value() ));
-//                break;
-//            case QVariant::Bool:
-//                m_shader->setUniformValue( unif->m_uniformLocation, unif->value().toBool());
-//                break;
-//            case QVariant::Image:
-//                //not yet supported
-//                break;
-//            default:
-//                Q_ASSERT( false );
-//                break;
-//            }
-//        }
-//    }
 
-
-
-//    foreach ( const GLuint unit, m_unitConfigs.keys() )
+    for(int i = 0; i < m_textures.length(); ++i)
+    {
+        m_textures.at(i)->bind(i);
+    }
+//    foreach ( const GLuint unit, m_textures.keys() )
 //    {
 //        const TextureUnitConfiguration& config = m_unitConfigs.value( unit );
 
@@ -596,18 +551,20 @@ void Model3DRenderer::render()
 //            m_shader->setUniformValue( m_samplerUniforms.value( unit ).constData(), unit );
 //    }
 
-    QMap<int, QList<int> >::const_iterator shaderStageIterator( m_subroutines.begin() );
+    QMap<int, QMap<int, int> >::const_iterator shaderStageIterator( m_subroutines.begin() );
     GLuint subroutines[100];
     while( shaderStageIterator != m_subroutines.end() )
     {
-        const QList<int> &subroutineList = shaderStageIterator.value();
+        const QMap<int, int> &subroutineList = shaderStageIterator.value();
         if(!subroutineList.empty())
         {
-            for(int i=0 ; i<subroutineList.length() ; ++i )
+            for (QMap<int, int>::const_iterator subroutineIterator(subroutineList.cbegin())
+                 ; subroutineIterator != subroutineList.cend()
+                 ; subroutineIterator++)
             {
-                subroutines[ i ] = subroutineList.at( i );
+                subroutines[ subroutineIterator.key() ] = subroutineIterator.value();
             }
-            m_funcs->glUniformSubroutinesuiv( shaderStageIterator.key(), subroutineList.length(), subroutines );
+            m_funcs->glUniformSubroutinesuiv( shaderStageIterator.key(), subroutineList.size(), subroutines );
         }
         shaderStageIterator++;
     }
@@ -619,12 +576,13 @@ void Model3DRenderer::render()
     m_funcs->glCullFace( GL_BACK );
 
     QOpenGLVertexArrayObject::Binder binder( &m_vao );
-    if( m_drawPoints )
+    if( m_primitiveType == Model3D::Points )
     {
         m_funcs->glDrawArrays(GL_POINTS, 0, m_vertexCount);
     }
     else
     {
+        //TODO: At the moment, the existence of tesselation shader controls primitive type
         m_shader->setPatchVertexCount(3);
         if( m_isInstanced )
         {
@@ -638,7 +596,6 @@ void Model3DRenderer::render()
             m_indices.bind();
             m_funcs->glDrawElements( primitiveType, m_indexCount, GL_UNSIGNED_INT, 0 );
             m_indices.release();
-            //m_funcs->glDrawArrays( primitiveType, 0, m_indexCount);//, GL_UNSIGNED_INT, 0 );
         }
     }
     m_shader->release();

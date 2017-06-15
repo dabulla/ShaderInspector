@@ -11,7 +11,6 @@ SOURCES += main.cpp \
     shader.cpp \
     shaderparameterinfo.cpp \
     shadermodel.cpp \
-    logorenderer.cpp \
     shaderparameter.cpp \
     camera.cpp \
     cameracontroller.cpp
@@ -48,7 +47,6 @@ HEADERS += \
     shader.h \
     shaderparameterinfo.h \
     shadermodel.h \
-    logorenderer.h \
     shaderparameter.h \
     camera_p.h \
     camera.h \
@@ -56,4 +54,9 @@ HEADERS += \
 
 DISTFILES += \
     shader/pointcloud.frag \
-    shader/pointcloud.vert
+    shader/pointcloud.vert \
+    shader/shader.fs \
+    shader/shader.gs \
+    shader/shader.tcs \
+    shader/shader.tes \
+    shader/shader.vs

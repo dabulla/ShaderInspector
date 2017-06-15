@@ -46,6 +46,10 @@ public slots:
     void setFragmentShader(QString fragmentShader);
     void setComputeShader(QString computeShader);
 
+    void reload();
+
+    void emitShaderUpdated();
+    bool isReloading();
 signals:
     void vertexShaderChanged(QString vertexShader);
     void geometryShaderChanged(QString geometryShader);
@@ -56,6 +60,7 @@ signals:
     void shaderProgramChanged(QOpenGLShaderProgram* shaderProgram);
     void modelChanged(QStandardItemModel* model);
 
+    void shaderUpdated();
 private:
     QString m_vertexShader;
     QString m_geometryShader;
@@ -63,6 +68,7 @@ private:
     QString m_tessellationEvaluationShader;
     QString m_fragmentShader;
     QString m_computeShader;
+    bool m_reloadScheduled;
 
     // QQuickFramebufferObject interface
     QOpenGLShaderProgram* m_shaderProgram;

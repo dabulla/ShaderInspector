@@ -5,8 +5,10 @@ import Qt.labs.settings 1.0 as Labs
 import fhac 1.0
 
 Item {
-    property alias parameters: delegateManager.parameters
+    id: root
     property alias shaderModel: treeViewShaderVariables.model
+    property alias parameterTarget: delegateManager.target
+    property alias parametersProperty: delegateManager.parametersProperty
     TreeView {
         anchors.fill: parent
         id: treeViewShaderVariables
@@ -21,36 +23,37 @@ Item {
                 return h
             }
         }
-
         TableViewColumn {
             id: colName
             role: "name"
             title: "name"
-            width: 60
+            width: 110
             resizable: true
             delegate: Label {
+                // this is a hack to force the whole expression to reevaluate when styleData changed. Moreover the model sends dataCHanged events altough the name stays the same
+                property bool found: treeViewShaderVariables.model.data (treeViewShaderVariables.model.index(styleData.row, 0), ShaderModel.ParameterFound) * (styleData.value !== "");
+                color: found ? "black" : "grey"
                 text: styleData.value
                 font.capitalization: Font.Capitalize
                 clip: true
             }
         }
-        TableViewColumn {
-            id: colType
-            role: "type"
-            title: "type"
-            width: 50
-            resizable: true
-
-            delegate: Label {
-                text: styleData.value.toString()
-                clip: true
-            }
-        }
+//        TableViewColumn {
+//            id: colType
+//            role: "type"
+//            title: "type"
+//            width: 50
+//            resizable: true
+//            delegate: Label {
+//                text: styleData.value.toString()
+//                clip: true
+//            }
+//        }
         TableViewColumn {
             id: colDatatype
             role: "datatype"
             title: "datatype"
-            width: 60
+            width: 77
             resizable: true
             delegate: Label {
                 text: styleData.value.toString()
@@ -63,7 +66,7 @@ Item {
             resizable: false
             width: treeViewShaderVariables.contentItem.width
                    - colName.width
-                   - colType.width
+                   //- colType.width
                    - colDatatype.width
             delegate: delegateManager.autoSelectComponent
         }

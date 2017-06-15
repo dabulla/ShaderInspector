@@ -8,11 +8,12 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLFunctions_4_0_Core>
 #include <QOpenGLVertexArrayObject>
+#include <QOpenGLTexture>
 #include "minimalobjreader.h"
 #include "vertexattribute.h"
-#include "logorenderer.h"
 #include "shaderparameterinfo.h"
 #include "camera.h"
+#include "model3d.h"
 
 class ShaderParameterInfoBackend;
 class Shader;
@@ -20,7 +21,6 @@ class Model3DRenderer : public QObject, public QQuickFramebufferObject::Renderer
 {
     Q_OBJECT
 public:
-    LogoRenderer m_logoRenderer;
     Model3DRenderer();
     virtual ~Model3DRenderer();
     void synchronize(QQuickFramebufferObject *item);
@@ -45,12 +45,12 @@ private:
 
     Shader *m_tmpShader; //TODO: DBG, TMP
     QOpenGLShaderProgram* m_shader;
-    QMap<GLuint, QImage> m_textureUniforms;
+    QList<QOpenGLTexture*> m_textures;
     QOpenGLFunctions_4_0_Core *m_funcs;
-    //Shader Stage to list of subroutine values
-    QMap<int, QList<int> > m_subroutines;
+    //Shader Stage to list of subroutine uniform location to value
+    QMap<int, QMap<int, int> > m_subroutines;
     Camera *m_camera;
-    bool m_drawPoints;
+    Model3D::PrimitiveType m_primitiveType;
     bool m_tesselationEnabled;
     bool m_isInstanced;
     int  m_vertexCountPerPrimitive; // TODO add instancing support

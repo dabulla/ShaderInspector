@@ -10,11 +10,6 @@ QVariant ShaderParameterInfo::type() const
     return QVariant::fromValue(m_type);
 }
 
-QVariant ShaderParameterInfo::value() const
-{
-    return m_value;
-}
-
 int ShaderParameterInfo::uniformLocation() const
 {
     return m_uniformLocation;
@@ -41,6 +36,8 @@ ShaderParameterInfo::ShaderParameterInfo(QObject *parent)
     , m_datatype(FLOAT)
     , m_uniformLocation(-1)
     , m_isSubroutine(false)
+    , m__subroutineShaderType(-1)
+    , m_found( true )
 {
 
 }
@@ -49,10 +46,11 @@ ShaderParameterInfo::ShaderParameterInfo(const ShaderParameterInfo &other)
     : m_name(other.m_name)
     , m_type(other.m_type)
     , m_datatype(other.m_datatype)
-    , m_value(other.m_value)
     , m_uniformLocation(other.m_uniformLocation)
     , m_isSubroutine(other.m_isSubroutine)
     , m_subroutineValues(other.m_subroutineValues)
+    , m__subroutineShaderType(other.m__subroutineShaderType)
+    , m_found(other.m_found)
 {
 }
 
@@ -193,9 +191,19 @@ QVariant::Type ShaderParameterInfo::fromGLDatatype(ShaderParameterDatatype type)
     }
 }
 
+bool ShaderParameterInfo::found() const
+{
+    return m_found;
+}
+
 QString ShaderParameterInfo::qmlTypename() const
 {
     return QString::fromLatin1(QVariant::typeToName(fromGLDatatype(m_datatype)));
+}
+
+int ShaderParameterInfo::_subroutineShaderType() const
+{
+    return m__subroutineShaderType;
 }
 
 void ShaderParameterInfo::setName(QString name)
@@ -251,4 +259,22 @@ void ShaderParameterInfo::setSubroutineValues(QStringList subroutineValues)
 
     m_subroutineValues = subroutineValues;
     emit subroutineValuesChanged(m_subroutineValues);
+}
+
+void ShaderParameterInfo::set_subroutineShaderType(int _subroutineShaderType)
+{
+    if (m__subroutineShaderType == _subroutineShaderType)
+        return;
+
+    m__subroutineShaderType = _subroutineShaderType;
+    emit _subroutineShaderTypeChanged(m__subroutineShaderType);
+}
+
+void ShaderParameterInfo::setFound(bool found)
+{
+    if (m_found == found)
+        return;
+
+    m_found = found;
+    emit foundChanged(m_found);
 }
