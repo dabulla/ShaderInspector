@@ -6,6 +6,7 @@ in screenSpaceData
 {
     vec3 normal;
     vec3 position;
+    vec3 worldPos;
     vec4 color;
     vec2 texCoord;
 } input;
@@ -22,6 +23,8 @@ uniform mat3 modelViewNormal;
 // uniforms from Gui
 uniform vec3 lightDir;
 uniform float shininess;
+uniform float jiggleFactor;
+uniform vec3 baseColor;
 
 // declare type of subroutine
 subroutine vec4 colorLookupType(vec2);
@@ -37,13 +40,22 @@ void main(void)
 
 vec4 phong(vec3 lightDirection, vec3 pos, vec3 normal, vec2 uv)
 {
-    // CODE HIER
-    // Uniform Variablen:
-    // float shininess
-    // sampler2D diffuseTex
-    // sampler2D specularTex
-    // Beispiel: http://www.lighthouse3d.com/tutorials/glsl-tutorial/directional-lights-per-pixel/
-    return vec4(mix(vec3(1.0,0.0,0.0),normal, 0.1), 1.0); //< not implemented color
+    float lambertian = max(dot(lightDirection, normal), 0.0);
+    float specular = 0.0;
+
+    if(lambertian > 0.0)
+    {
+        vec3 reflectDir = reflect(-lightDirection, normal);
+        vec3 viewDir = normalize(-pos);
+
+        float specAngle = max(dot(reflectDir, viewDir), 0.0);
+        specular = pow(specAngle, shininess * 128.0);
+        specular *= texture(specularTex, uv).r;
+    }
+    vec4 diffuse = texture(diffuseTex, uv);
+
+    return vec4( lambertian*baseColor.rgb*diffuse.rgb +
+                          specular*vec3(1.0), 1.0);
 }
 
 // define subroutines of type "colorLookupType"
@@ -77,4 +89,22 @@ vec4 phongShading(vec2 uv)
                   input.position,
                   normalize(input.normal),
                   uv);
+}
+
+subroutine(colorLookupType)
+vec4 anisotrophicShading(vec2 uv)
+{
+    // CODE HIER
+    // Uniform Variablen:
+    // float jiggleFactor
+    vec4 finalColor = vec4(0.0);
+    for ( int i = 0; i < 2; i++) {
+        vec3 offset = (i==0) ? input.worldPos : -input.worldPos;
+        offset.y = 0.0;
+        vec3 jiggledNormal = normalize( input.normal + jiggleFactor * normalize( offset ) );
+    }
+    return phong( normalize(modelViewNormal * lightDir),
+                  input.position,
+                  normalize(input.normal),
+                  vec2(0.0));
 }

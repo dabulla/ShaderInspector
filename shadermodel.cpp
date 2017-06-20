@@ -1,5 +1,6 @@
 #include "shadermodel.h"
 #include "shaderparameterinfo.h"
+#include <algorithm>
 
 ShaderModel::ShaderModel(QObject *parent)
     :QStandardItemModel(parent)
@@ -10,19 +11,23 @@ ShaderModel::ShaderModel(QObject *parent)
     m_roleNameMapping[ParameterUniformLocation] = "location";
     m_roleNameMapping[ParameterData] = "data";
     m_roleNameMapping[ParameterFound] = "found";
+    setSortRole(ShaderModel::ParameterName);
 }
 
 ShaderModel::ShaderModel(const ShaderModel &other)
     : m_roleNameMapping(other.m_roleNameMapping)
 {
-
+    setSortRole(ShaderModel::ParameterName);
 }
 
 void ShaderModel::syncModel(const ShaderParameterMap &parameters)
 {
     m_parameters = parameters;
-    for( auto param = parameters.cbegin(); param != parameters.cend(); ++param )
+    QList<QString> paramSorted = m_parameters.keys();
+    std::sort(paramSorted.begin(), paramSorted.end());
+    for( auto paramName = paramSorted.cbegin(); paramName != paramSorted.cend(); ++paramName )
     {
+        const ShaderParameterInfoBackend *param = &m_parameters[*paramName];
         ShaderParameterInfo *theUniform = new ShaderParameterInfo(this);
         theUniform->setName( param->m_name );
         theUniform->setType( param->m_type );

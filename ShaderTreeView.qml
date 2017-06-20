@@ -13,7 +13,7 @@ Item {
         anchors.fill: parent
         id: treeViewShaderVariables
         horizontalScrollBarPolicy: Qt.ScrollBarAlwaysOff
-
+        sortIndicatorVisible: true
         rowDelegate: Rectangle {
             property var row: styleData.row
             height: {

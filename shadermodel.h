@@ -2,6 +2,7 @@
 #define SHADERMODEL_H
 
 #include <QStandardItemModel>
+#include <QSortFilterProxyModel>
 #include "shaderparameterinfo.h"
 
 class ShaderParameterInfoBackend;
@@ -26,9 +27,11 @@ public:
     ShaderModel(QObject *parent = nullptr);
     ShaderModel(const ShaderModel &other);
 
+
 public slots:
     void syncModel(const ShaderParameterMap &parameters);
     QHash<int, QByteArray> roleNames() const;
+
 private:
     void markFound(QAbstractItemModel* model, QModelIndex parent = QModelIndex());
     QHash<int, QByteArray> m_roleNameMapping;

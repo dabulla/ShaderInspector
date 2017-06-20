@@ -6,6 +6,7 @@ in screenSpaceData
 {
     vec3 normal;
     vec3 position;
+    vec3 worldPos;
     vec4 color;
     vec2 texCoord;
 } input;
@@ -22,6 +23,7 @@ uniform mat3 modelViewNormal;
 // uniforms from Gui
 uniform vec3 lightDir;
 uniform float shininess;
+uniform float jiggleFactor;
 uniform vec3 baseColor;
 
 // declare type of subroutine
@@ -88,3 +90,21 @@ vec4 phongShading(vec2 uv)
                   normalize(input.normal),
                   uv);
 }
+
+subroutine(colorLookupType)
+vec4 anisotrophicShading(vec2 uv)
+{
+    vec4 finalColor = vec4(0.0);
+    for ( int i = 0; i < 2; i++) {
+        vec3 offset = (i==0) ? input.worldPos : -input.worldPos;
+        offset.y = 0.0;
+        vec3 jiggledNormal = normalize( input.normal + jiggleFactor * normalize( offset*1.0 ) );
+        finalColor += phong( normalize(modelViewNormal * lightDir),
+                          input.position,
+                          normalize(jiggledNormal),
+                          vec2(0.0))*0.5;
+    }
+    return finalColor;
+}
+
+

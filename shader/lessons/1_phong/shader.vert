@@ -12,6 +12,7 @@ out screenSpaceData
 {
     vec3 normal;
     vec3 position;
+    vec3 worldPos;
     vec4 color;
     vec2 texCoord;
 } output;
@@ -32,6 +33,7 @@ void main(void)
     vec4 positionViewSpace = modelView * vec4(vertexPosition, 1.0);
     gl_Position = positionProjected;
     output.position = positionViewSpace.xyz / positionViewSpace.w;
+    output.worldPos = vertexPosition;
     output.texCoord = vertexTexCoord;
     output.normal = modelViewNormal * vertexNormal;
 
