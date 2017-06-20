@@ -58,6 +58,7 @@ public slots:
     void setCamera(Camera* camera);
     void setPrimitiveType(PrimitiveType primitiveType);
 
+    void appendParameter(ShaderParameter* p);
 signals:
     void filenameChanged(QString filename);
     void loadingFile(QFuture<Vertices*> future);

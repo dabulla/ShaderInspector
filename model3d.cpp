@@ -114,6 +114,12 @@ void Model3D::setPrimitiveType(Model3D::PrimitiveType primitiveType)
     emit primitiveTypeChanged(m_primitiveType);
 }
 
+void Model3D::appendParameter(ShaderParameter *p)
+{
+    QQmlListProperty<ShaderParameter> list(parameters());
+    (list.append)(&list, p);
+}
+
 void Model3D::registerParameter(ShaderParameter *p)
 {
     if(this->m_shader->parameterInfo(p->name()) == nullptr)

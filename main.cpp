@@ -32,6 +32,12 @@ int main(int argc, char *argv[])
     QQuickView view;
     view.setWidth(1600);
     view.setHeight(900);
+    view.rootContext()->setContextProperty("currentPath", QDir::currentPath());
+#ifdef _WIN32
+    view.rootContext()->setContextProperty("pathPrefix", "file:///");
+#else
+    view.rootContext()->setContextProperty("pathPrefix", "file://");
+#endif
     QOpenGLDebugLogger logger;
     QObject::connect( &view, &QQuickWindow::sceneGraphInitialized, [&view, &logger]()
     {
@@ -55,15 +61,6 @@ int main(int argc, char *argv[])
     format.setVersion(4, 0);
     format.setProfile(QSurfaceFormat::CoreProfile);
     view.setFormat(format);
-
-//    // TODO: make Camera/CameraController part of qml
-//    QObject *rootObject = &view;//engine.rootObjects().at(0);
-//    QQmlContext *context = view.rootContext();//engine.rootContext();
-//    CameraController *controller = new CameraController(rootObject);
-//    Camera *camera = new Camera(rootObject);
-//    context->setContextProperty("theCamera", camera);
-//    controller->setCamera(camera);
-//    rootObject->installEventFilter( controller );
 
     view.setSource(QUrl(QStringLiteral("qrc:/main.qml")));
     view.show();

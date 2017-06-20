@@ -85,6 +85,7 @@ void Model3DRenderer::synchronize(QQuickFramebufferObject *item)
         modelItem->m_updates.clear();
         m_shader->release();
     }
+    m_size = QVector2D(modelItem->width(), modelItem->height());
     modelItem->update();
 }
 void Model3DRenderer::updateCameraParameters(Shader *shader)
@@ -92,14 +93,20 @@ void Model3DRenderer::updateCameraParameters(Shader *shader)
     ShaderParameterInfoBackend *info;
     info = shader->parameterInfo("mvp");
     if(info) updateParameter(info, m_camera->viewProjectionMatrix());
+    info = shader->parameterInfo("modelView");
+    if(info) updateParameter(info, m_camera->viewMatrix());
     info = shader->parameterInfo("modelMatrix");
     if(info) updateParameter(info, m_camera->viewMatrix());
-    info = shader->parameterInfo("modelViewNormal"); // TODO
-    if(info) updateParameter(info, m_camera->viewMatrix());
+    info = shader->parameterInfo("modelViewNormal");
+    if(info) updateParameter(info, QVariant::fromValue( m_camera->viewMatrix().normalMatrix() ));
     info = shader->parameterInfo("projectionMatrix");
     if(info) updateParameter(info, m_camera->projectionMatrix());
-//    info = shader->parameterInfo("viewportMatrix");
-//    if(info) updateParameter(info, m_camera->view());
+    info = shader->parameterInfo("viewportMatrix");
+//    QMatrix4x4 viewportMatrix;
+//    viewportMatrix.viewport(0,m_size.y(), m_size.x(), m_size.y(), m_camera->nearPlane(), m_camera->farPlane() );
+//    if(info) updateParameter(info, viewportMatrix);
+    info = shader->parameterInfo("viewportSize");
+    if(info) updateParameter(info, m_size);
 }
 
 void Model3DRenderer::recreateVao()
@@ -576,7 +583,7 @@ void Model3DRenderer::render()
     m_funcs->glCullFace( GL_BACK );
 
     QOpenGLVertexArrayObject::Binder binder( &m_vao );
-    if( m_primitiveType == Model3D::Points )
+    if( m_primitiveType == Model3D::Points && !m_tesselationEnabled )
     {
         m_funcs->glDrawArrays(GL_POINTS, 0, m_vertexCount);
     }

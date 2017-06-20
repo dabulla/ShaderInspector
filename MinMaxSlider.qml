@@ -16,7 +16,7 @@ ColumnLayout {
         minimumValue: comp.isInt ? parseInt(minVal.text) : parseFloat(minVal.text)
         maximumValue: comp.isInt ? parseInt(maxVal.text) : parseFloat(maxVal.text)
         stepSize: isInt ? 1.0 : 0.0
-        enabled: comp.enabled //TODO
+        enabled: comp.enabled
     }
     RowLayout {
         Layout.fillWidth: true

@@ -10,6 +10,7 @@ Item {
     property alias autoSelectComponent: autoSelectComponent
     property var target
     property string parametersProperty: "parameters"
+    property var treeView //TODO: there should be no dependecy on treeview
 
     function heightOfType(datatype, isSubroutine) {
         if(!datatype) return
@@ -62,7 +63,9 @@ Item {
             }
             if (!found) {
                 var param = shaderParameterComponent.createObject(root.target, {"name": name, "value": value })
-                root.target[root.parametersProperty].push(param)
+                // This is a pre Qt5.9 version, sinde Qt5.8 does not like push() with QmlListProperty
+                //root.target[root.parametersProperty].push(param)
+                root.target.appendParameter(param)
             }
         }
     }
@@ -74,41 +77,49 @@ Item {
             anchors.margins: 3
             id: item
             clip: true
+
             Component.onCompleted: {
                 //styleData comes from TableView
                 if( styleData.value.isSubroutine ) {
                     subroutineChooser.createObject(item, styleData.value)
                 } else {
+                    var obj
                     switch(styleData.value.datatype.valueOf()) {
                         case ShaderParameterInfo.FLOAT:
                         case ShaderParameterInfo.DOUBLE:
-                            defaultFloatSlider.createObject(item, styleData.value)
+                            obj = defaultFloatSlider.createObject(item, styleData.value)
                             break;
                         case ShaderParameterInfo.FLOAT_VEC2:
-                            defaultVec2Control.createObject(item, styleData.value)
+                            obj = defaultVec2Control.createObject(item, styleData.value)
                             break;
                         case ShaderParameterInfo.FLOAT_VEC3:
-                            defaultVec3Control.createObject(item, styleData.value)
+                            obj = defaultVec3Control.createObject(item, styleData.value)
                             break;
                         case ShaderParameterInfo.FLOAT_VEC4:
-                            defaultVec4Control.createObject(item, styleData.value)
+                            obj = defaultVec4Control.createObject(item, styleData.value)
                             break;
                         case ShaderParameterInfo.INT:
-                            var obj = defaultFloatSlider.createObject(item, styleData.value)
+                            obj = defaultFloatSlider.createObject(item, styleData.value)
                             obj.isInt = true
                             break;
                         case ShaderParameterInfo.BOOL:
-                            defaultBoolComponent.createObject(item, styleData.value)
+                            obj = defaultBoolComponent.createObject(item, styleData.value)
                             break;
                         case ShaderParameterInfo.FLOAT_MAT4:
-                            notAvaliableComponent.createObject(item, styleData.value)
+                            obj = notAvaliableComponent.createObject(item, styleData.value)
                             break;
                         case ShaderParameterInfo.SAMPLER_2D:
-                            notAvaliableComponent.createObject(item, styleData.value)
+                            obj = notAvaliableComponent.createObject(item, styleData.value)
                             break;
                         default:
-                            notAvaliableComponent.createObject(item, styleData.value)
+                            obj = notAvaliableComponent.createObject(item, styleData.value)
                     }
+                    // A bit hacky here. dynamic object creation destroys signal/slots
+                    styleData.valueChanged.connect(function() {
+                        if((typeof obj["found"] !== "undefined") && (typeof styleData !== "undefined")) {
+                            obj.found = styleData.value.found
+                        }
+                    })
                 }
             }
         }
@@ -123,11 +134,13 @@ Item {
             property string name
             property string qmlTypename
             property var subroutineValues
+            property bool found
             Label {
                 text: name + ":"
                 font.capitalization: Font.Capitalize
             }
             ComboBox {
+                enabled: comp.found
                 Layout.fillWidth: true
                 id: subroutineCb
                 model: subroutineValues
@@ -162,6 +175,7 @@ Item {
             property string name
             property bool isInt
             property string qmlTypename
+            property bool found
             Component.onCompleted: updateUniform();
             function updateUniform() {
                 priv.setParameter(name, Qt.vector2d(valueSliderx.value,
@@ -171,6 +185,7 @@ Item {
                 Layout.fillWidth: true
                 id: valueSliderx
                 isInt: comp.isInt
+                enabled: comp.found
                 minMaxEditable: false
                 min: valueSlidery.min
                 max: valueSlidery.max
@@ -180,6 +195,7 @@ Item {
                 Layout.fillWidth: true
                 id: valueSlidery
                 isInt: comp.isInt
+                enabled: comp.found
                 onValueChanged: updateUniform()
             }
         }
@@ -194,6 +210,7 @@ Item {
             property string name
             property bool isInt
             property string qmlTypename
+            property bool found
             Component.onCompleted: updateUniform();
             function updateUniform() {
                 priv.setParameter(name, Qt.vector3d(valueSliderx.value,
@@ -202,8 +219,9 @@ Item {
             }
             MinMaxSlider {
                 Layout.fillWidth: true
-                id:valueSliderx
+                id: valueSliderx
                 isInt: comp.isInt
+                enabled: comp.found
                 minMaxEditable: false
                 min: valueSliderz.min
                 max: valueSliderz.max
@@ -211,8 +229,9 @@ Item {
             }
             MinMaxSlider {
                 Layout.fillWidth: true
-                id:valueSlidery
+                id: valueSlidery
                 isInt: comp.isInt
+                enabled: comp.found
                 minMaxEditable: false
                 min: valueSliderz.min
                 max: valueSliderz.max
@@ -220,8 +239,9 @@ Item {
             }
             MinMaxSlider {
                 Layout.fillWidth: true
-                id:valueSliderz
+                id: valueSliderz
                 isInt: comp.isInt
+                enabled: comp.found
                 onValueChanged: updateUniform()
             }
         }
@@ -234,6 +254,7 @@ Item {
             id: comp
             property string name
             property bool isInt
+            property bool found
             property string qmlTypename
             Component.onCompleted: updateUniform();
             function updateUniform() {
@@ -244,8 +265,9 @@ Item {
             }
             MinMaxSlider {
                 Layout.fillWidth: true
-                id:valueSliderx
+                id: valueSliderx
                 isInt: comp.isInt
+                enabled: comp.found
                 minMaxEditable: false
                 min: valueSliderw.min
                 max: valueSliderw.max
@@ -253,8 +275,9 @@ Item {
             }
             MinMaxSlider {
                 Layout.fillWidth: true
-                id:valueSlidery
+                id: valueSlidery
                 isInt: comp.isInt
+                enabled: comp.found
                 minMaxEditable: false
                 min: valueSliderw.min
                 max: valueSliderw.max
@@ -262,8 +285,9 @@ Item {
             }
             MinMaxSlider {
                 Layout.fillWidth: true
-                id:valueSliderz
+                id: valueSliderz
                 isInt: comp.isInt
+                enabled: comp.found
                 minMaxEditable: false
                 min: valueSliderw.min
                 max: valueSliderw.max
@@ -271,8 +295,9 @@ Item {
             }
             MinMaxSlider {
                 Layout.fillWidth: true
-                id:valueSliderw
+                id: valueSliderw
                 isInt: comp.isInt
+                enabled: comp.found
                 onValueChanged: updateUniform()
             }
         }
@@ -284,6 +309,8 @@ Item {
             id: comp
             property string name
             property string qmlTypename
+            property bool found
+            enabled: found
             Component.onCompleted: priv.setParameter(name, checked, qmlTypename);
             onCheckedChanged: priv.setParameter(name, checked, qmlTypename);
         }

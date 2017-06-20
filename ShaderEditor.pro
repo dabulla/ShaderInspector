@@ -59,4 +59,66 @@ DISTFILES += \
     shader/shader.gs \
     shader/shader.tcs \
     shader/shader.tes \
-    shader/shader.vs
+    shader/shader.vs \
+    shader/lessons/1_phong/shader.frag \
+    shader/lessons/1_phong/shader.vert \
+    shader/lessons/3_tessellation/settings.qmlc \
+    shader/lessons/3_tessellation/SettingsShader.qmlc \
+    shader/lessons/3_tessellation/shader_tcs.glsl \
+    shader/lessons/3_tessellation/shader_tes.glsl \
+    shader/lessons/3_tessellation_solution/shader_tcs.glsl \
+    shader/lessons/3_tessellation_solution/shader_tes.glsl \
+    shader/lessons/shader_tcs.glsl \
+    shader/lessons/shader_tes.glsl \
+    shader/lessons/2_tangentspace/shader.geom \
+    shader/lessons/2_tangentspace_solution/shader.geom \
+    shader/lessons/3_tessellation/shader.geom \
+    shader/lessons/3_tessellation_solution/shader.geom \
+    shader/lessons/shader.geom \
+    shader/lessons/1_phong/shader.frag \
+    shader/lessons/1_phong_solution/shader.frag \
+    shader/lessons/2_tangentspace/shader.frag \
+    shader/lessons/3_tessellation/shader.frag \
+    shader/lessons/3_tessellation_solution/shader.frag \
+    shader/lessons/shader.frag \
+    shader/lessons/1_phong/shader.vert \
+    shader/lessons/1_phong_solution/shader.vert \
+    shader/lessons/2_tangentspace/shader.vert \
+    shader/lessons/3_tessellation/shader.vert \
+    shader/lessons/3_tessellation_solution/shader.vert \
+    shader/lessons/shader.vert \
+    shader/lessons/3_tessellation/settings.qml \
+    shader/lessons/1_phong/settings.qml \
+    shader/lessons/2_tangentspace_solution/settings.qml \
+    shader/lessons/3_tessellation/shader_tcs.glsl \
+    shader/lessons/3_tessellation/shader_tes.glsl \
+    shader/lessons/3_tessellation_solution/shader_tcs.glsl \
+    shader/lessons/3_tessellation_solution/shader_tes.glsl \
+    shader/lessons/shader_tcs.glsl \
+    shader/lessons/shader_tes.glsl \
+    shader/lessons/2_tangentspace/shader.geom \
+    shader/lessons/2_tangentspace_solution/shader.geom \
+    shader/lessons/3_tessellation/shader.geom \
+    shader/lessons/3_tessellation_solution/shader.geom \
+    shader/lessons/shader.geom \
+    shader/lessons/1_phong/shader.frag \
+    shader/lessons/1_phong_solution/shader.frag \
+    shader/lessons/2_tangentspace/shader.frag \
+    shader/lessons/3_tessellation/shader.frag \
+    shader/lessons/3_tessellation_solution/shader.frag \
+    shader/lessons/shader.frag \
+    shader/lessons/1_phong/shader.vert \
+    shader/lessons/1_phong_solution/shader.vert \
+    shader/lessons/2_tangentspace/shader.vert \
+    shader/lessons/3_tessellation/shader.vert \
+    shader/lessons/3_tessellation_solution/shader.vert \
+    shader/lessons/shader.vert \
+    shader/lessons/1_phong/settings.qml \
+    shader/lessons/1_phong_solution/settings.qml \
+    shader/lessons/2_tangentspace/settings.qml \
+    shader/lessons/2_tangentspace_solution/settings.qml \
+    shader/lessons/3_tessellation/settings.qml \
+    shader/lessons/3_tessellation_solution/settings.qml \
+    shader/lessons/1_phong/settings.qml \
+    shader/lessons/2_tangentspace_solution/shader.frag \
+    shader/lessons/2_tangentspace_solution/shader.vert

@@ -13,7 +13,6 @@ uniform mat4 modelView;
 uniform mat3 modelViewNormal;
 uniform mat4 mvp;
 uniform mat4 projectionMatrix;
-uniform mat4 viewportMatrix;
 
 uniform float theColorMulti;
 uniform vec3 theColorSuper;

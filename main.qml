@@ -58,6 +58,7 @@ Item {
                         property alias windowWidth: root.width
                         property alias windowHeight: root.height
                         property alias rotationSpeed: settings.rotationSpeed
+                        property alias primitiveTypeIndex: settings.primitiveTypeIndex
                     }
                     onClicked: settings.open()
                 }
@@ -114,8 +115,8 @@ Item {
                 shader: theShader
                 camera: Camera {
                     id: theCamera
-                    //position: Qt.vector3d(-90, 190, 100)
-                    viewCenter: Qt.vector3d(-0.06, 0.12, 0)
+                    position: Qt.vector3d(-0.90, 1.90, 1.00)
+                    viewCenter: Qt.vector3d(-0.6, 1.2, 0)
                 }
                 ShaderParameter {
                     id: timeParameter
@@ -130,11 +131,18 @@ Item {
                 ShaderParameter {
                     name: "diffuseTex"
                     value: ":/textures/75692-diffuse.jpg"
-//                    Image {
-//                        source: ":/textures/75692-diffuse.jpg"
-//                        width: 128
-//                        height: 128
-//                    }
+                }
+                ShaderParameter {
+                    name: "specularTex"
+                    value: ":/textures/75692-specular.png"
+                }
+                ShaderParameter {
+                    name: "normalTex"
+                    value: ":/textures/75692-normal.png"
+                }
+                ShaderParameter {
+                    name: "heightTex"
+                    value: ":/textures/75692-height.png"
                 }
             }
         }

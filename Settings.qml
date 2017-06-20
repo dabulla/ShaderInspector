@@ -8,55 +8,110 @@ import fhac 1.0
 Dialog {
     width: 800
     property alias vertexShader: vsTf.text
-    property alias geometryShader: gsTf.text
     property alias tessellationControlShader: tcsTf.text
     property alias tessellationEvaluationShader: tesTf.text
+    property alias geometryShader: gsTf.text
     property alias fragmentShader: fsTf.text
     property alias computeShader: csTf.text
     property alias modelSource: modelTf.text
     property alias rotationSpeed: rotateSlider.value
     property alias primitiveType: primitiveTypeCb.value
+    property alias primitiveTypeIndex: primitiveTypeCb.currentIndex
 
+    FileDialog {
+        id: settingsFiledialog
+        title: "Settings"
+        nameFilters: [ "Settings Item (*.qml)", "All files (*)"]
+        onFileUrlChanged: {
+            var settingItemFilename = fileUrl.toString()
+            var settingsItemComponent = Qt.createComponent(settingItemFilename)
+            var fin = function() {
+                if (settingsItemComponent.status === Component.Ready) {
+                    var settingItemFilename = fileUrl.toString().replace(pathPrefix, "")
+                    var loadedItem = settingsItemComponent.createObject(loadedSettings, {"basename": settingItemFilename.replace(/\\/g, '/').replace(/\/[^\/]*$/, '/')})
+                    if (loadedItem === null) {
+                        // Error Handling
+                        console.log("Error loading settings");
+                        return
+                    }
+                    if(typeof loadedItem["vertexShader"] !== "undefined") {
+                        vsTf.text = loadedItem["vertexShader"]
+                    }
+                    if(typeof loadedItem["tessellationControlShader"] !== "undefined") {
+                        tcsTf.text = loadedItem["tessellationControlShader"]
+                    }
+                    if(typeof loadedItem["tessellationEvaluationShader"] !== "undefined") {
+                        tesTf.text = loadedItem["tessellationEvaluationShader"]
+                    }
+                    if(typeof loadedItem["geometryShader"] !== "undefined") {
+                        gsTf.text = loadedItem["geometryShader"]
+                    }
+                    if(typeof loadedItem["fragmentShader"] !== "undefined") {
+                        fsTf.text = loadedItem["fragmentShader"]
+                    }
+                    if(typeof loadedItem["computeShader"] !== "undefined") {
+                        csTf.text = loadedItem["computeShader"]
+                    }
+                } else if (settingsItemComponent.status === Component.Error) {
+                    // Error Handling
+                    console.log("Error loading component:", settingsItemComponent.errorString());
+                }
+            }
+            if (settingsItemComponent.status === Component.Ready) {
+                fin()
+            } else if(settingsItemComponent.status === Component.Loading) {
+                settingsItemComponent.statusChanged.connect(fin)
+            } else {
+                console.log(settingsItemComponent.errorString());
+            }
+        }
+
+        function finishCreation() {
+
+        }
+
+        folder: currentPath
+    }
     FileDialog {
         id: vertexShaderFiledialog
         title: "Vertexshader"
         nameFilters: [ "GLSL Vertexshader files (*.vs *.vert *.glsl)", "GLSL files (*.glsl)", "GLSL Vertexshader files (*.vs *.vert)", "All files (*)"]
-        onFileUrlChanged: vsTf.text = fileUrl.toString().replace("file://", "")
+        onFileUrlChanged: vsTf.text = fileUrl.toString().replace(pathPrefix, "")
         folder: vsTf.text
     }
     FileDialog {
         id: geometryShaderFiledialog
         title: "Geometryshader"
         nameFilters: [ "GLSL Geometryshader files (*.gs *.geom *.glsl)", "GLSL files (*.glsl)", "GLSL Geometryshader files (*.gs *.geom)", "All files (*)"]
-        onFileUrlChanged: gsTf.text = fileUrl.toString().replace("file://", "")
+        onFileUrlChanged: gsTf.text = fileUrl.toString().replace(pathPrefix, "")
         folder: gsTf.text
     }
     FileDialog {
         id: tcsShaderFiledialog
         title: "Tesselation Control Shader"
         nameFilters: [ "GLSL Tesselation Control Shader files (*.tcs *.glsl)", "GLSL files (*.glsl)", "GLSL Tesselation Control Shader files (*.tcs)", "All files (*)"]
-        onFileUrlChanged: tcsTf.text = fileUrl.toString().replace("file://", "")
+        onFileUrlChanged: tcsTf.text = fileUrl.toString().replace(pathPrefix, "")
         folder: tcsTf.text
     }
     FileDialog {
         id: tesShaderFiledialog
         title: "Tesselation Evaluation Shader"
         nameFilters: [ "GLSL Tesselation Evaluation Shader files (*.tes *.glsl)", "GLSL files (*.glsl)", "GLSL Tesselation Evaluation Shader files (*.tes)", "All files (*)"]
-        onFileUrlChanged: tesTf.text = fileUrl.toString().replace("file://", "")
+        onFileUrlChanged: tesTf.text = fileUrl.toString().replace(pathPrefix, "")
         folder: tesTf.text
     }
     FileDialog {
         id: fragmentShaderFiledialog
         title: "Fragmentshader"
         nameFilters: [ "GLSL Fragmentshader files (*.fs *.frag *.glsl)", "GLSL files (*.glsl)", "GLSL Fragmentshader files (*.fs *.frag)", "All files (*)"]
-        onFileUrlChanged: fsTf.text = fileUrl.toString().replace("file://", "")
+        onFileUrlChanged: fsTf.text = fileUrl.toString().replace(pathPrefix, "")
         folder: fsTf.text
     }
     FileDialog {
         id: computeShaderFiledialog
         title: "Computeshader"
         nameFilters: [ "GLSL Computeshader files (*.cs *.comp *.glsl)", "GLSL files (*.glsl)", "GLSL Fragmentshader files (*.cs *.comp)", "All files (*)"]
-        onFileUrlChanged: fsTf.text = fileUrl.toString().replace("file://", "")
+        onFileUrlChanged: fsTf.text = fileUrl.toString().replace(pathPrefix, "")
         folder: fsTf.text
     }
     FileDialog {
@@ -102,11 +157,16 @@ Dialog {
 //            "3D GameStudio (3DGS) Terrain ( .hmp )",
 //            "Izware Nendo ( .ndo )",
             "All files (*)" ]
-        onFileUrlChanged: modelTf.text = fileUrl.toString().replace("file://", "") //TODO: Windows
+        onFileUrlChanged: modelTf.text = fileUrl.toString().replace(pathPrefix, "")
         folder: modelTf.text
     }
 
     ColumnLayout {
+        Item {
+            id: loadedSettings
+            width: 0
+            height: 0
+        }
         anchors.fill: parent
         GridLayout {
             Layout.fillWidth: true
@@ -276,6 +336,10 @@ Dialog {
                 enabled: showGridCb.checked
                 Layout.fillWidth: true
             }
+        }
+        Button {
+            text: "Load Settings"
+            onClicked: settingsFiledialog.open()
         }
     }
 }

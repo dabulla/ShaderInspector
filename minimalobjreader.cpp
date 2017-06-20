@@ -58,6 +58,10 @@ Vertices * MinimalObjReader::readFile(QString uri, Vertices *vertices)
                 //Create new vertex
                 //SSCANF(pszBuff, "v %f %f %f", &vertex.x, &vertex.y, &vertex.z); //< broken on linux?
                 lineStream >> vertex.x >> vertex.y >> vertex.z;
+                //TODO: In the current code is no model matrix, thus we scale here at the moment
+                vertex.x *= 10.0f;
+                vertex.y *= 10.0f;
+                vertex.z *= 10.0f;
                 vertices->positions.push_back(vertex);
                 //++vertexCount;
                 break;

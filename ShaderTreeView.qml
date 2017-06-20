@@ -73,5 +73,6 @@ Item {
     }
     ShaderUniformDelegateManager {
         id: delegateManager
+        treeView: treeViewShaderVariables
     }
 }

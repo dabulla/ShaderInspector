@@ -43,7 +43,7 @@ vec4 phong(vec3 lightDirection, vec3 pos, vec3 normal, vec2 uv)
     // sampler2D diffuseTex
     // sampler2D specularTex
     // Beispiel: http://www.lighthouse3d.com/tutorials/glsl-tutorial/directional-lights-per-pixel/
-    return vec4(mix(vec3(1.0,1.0-shininess,0.0),normal, 0.07), 1.0); //< not implemented color
+    return vec4(mix(vec3(1.0,0.0,0.0),normal, 0.1), 1.0); //< not implemented color
 }
 
 // define subroutines of type "colorLookupType"

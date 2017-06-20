@@ -57,6 +57,7 @@ private:
     int  m_primitiveCount;
     bool m_reinitializeFromVertexdata;
     bool m_vertexdataInitialized;
+    QVector2D m_size;
     QOpenGLVertexArrayObject m_vao;
 
     void updateCameraParameters(Shader *shader);
