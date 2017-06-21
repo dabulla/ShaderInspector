@@ -1,6 +1,6 @@
 #version 400
 
-//input
+//inp
 in screenSpaceData
 {
     vec3 normal;
@@ -8,9 +8,9 @@ in screenSpaceData
     vec4 color;
     vec2 texCoord;
     noperspective vec3 edgeDistance;
-} input;
+} inp;
 
-// output
+// outp
 out vec4 out_Color;
 
 const vec4 gamma = vec4(vec3(2.2), 1.0);
@@ -41,7 +41,7 @@ subroutine uniform colorLookupType colorMode;
 
 void main(void)
 {
-    out_Color = colorMode( input.texCoord );
+    out_Color = colorMode( inp.texCoord );
 }
 
 vec4 phong(vec3 lightDirection, vec3 pos, vec3 normal, vec2 uv)
@@ -67,8 +67,8 @@ vec4 phong(vec3 lightDirection, vec3 pos, vec3 normal, vec2 uv)
 vec4 wireFrame( vec4 color, vec4 wireFrameColor )
 {
     // Find the smallest distance between the fragment and a triangle edge
-    float d = min( input.edgeDistance.x, input.edgeDistance.y );
-    d = min( d, input.edgeDistance.z );
+    float d = min( inp.edgeDistance.x, inp.edgeDistance.y );
+    d = min( d, inp.edgeDistance.z );
 
     // Blend between line color and triangle color
     float mixVal = smoothstep(0.0, 1.5, line.width - d + 0.5 );
@@ -87,7 +87,7 @@ vec4 wireFrame( vec4 color, vec4 wireFrameColor )
 subroutine(colorLookupType)
 vec4 lightOnly(vec2 uv)
 {
-    return input.color;
+    return inp.color;
 }
 
 subroutine(colorLookupType)
@@ -106,8 +106,8 @@ subroutine(colorLookupType)
 vec4 phongShading(vec2 uv)
 {
     return phong( normalize(modelViewNormal * lightDir),
-                  input.positionViewSpace,
-                  normalize(input.normal),
+                  inp.positionViewSpace,
+                  normalize(inp.normal),
                   uv);
 }
 

@@ -10,7 +10,7 @@ in worldVertex
     vec3 tangent;
     vec3 bitangent;
     vec4 color;
-} input[];
+} inp[];
 
 
 out worldVertex
@@ -21,18 +21,18 @@ out worldVertex
     vec3 tangent;
     vec3 bitangent;
     vec4 color;
-} output[];
+} outp[];
 
 #define ID gl_InvocationID
 
 void main()
 {
-    output[ID].position = input[ID].position;
-    output[ID].texCoord = input[ID].texCoord;
-    output[ID].normal = input[ID].normal;
-    output[ID].tangent = input[ID].tangent;
-    output[ID].bitangent = input[ID].bitangent;
-    output[ID].color = input[ID].color;
+    outp[ID].position = inp[ID].position;
+    outp[ID].texCoord = inp[ID].texCoord;
+    outp[ID].normal = inp[ID].normal;
+    outp[ID].tangent = inp[ID].tangent;
+    outp[ID].bitangent = inp[ID].bitangent;
+    outp[ID].color = inp[ID].color;
     if (ID == 0) {
         // CODE HIER
         // (Tesselation Levels sollen ueber uniform-varibale steuerbar sein)

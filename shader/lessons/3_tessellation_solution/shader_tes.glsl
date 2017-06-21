@@ -5,11 +5,11 @@ layout(triangles, equal_spacing, ccw) in;
 uniform sampler2D heightTex;
 uniform float heightScale;
 
-//// input:
-// 1) whole primitive (input[])
+//// inp:
+// 1) whole primitive (inp[])
 // 2) interpolation information (gl_TessCoord)
-//    - gl_TessCoord.x => how much influence has input[0]
-//    - gl_TessCoord.y => how much influence has input[1]
+//    - gl_TessCoord.x => how much influence has inp[0]
+//    - gl_TessCoord.y => how much influence has inp[1]
 //    - ...
 in worldVertex
 {
@@ -19,9 +19,9 @@ in worldVertex
     vec3 tangent;
     vec3 bitangent;
     vec4 color;
-} input[];
+} inp[];
 
-//// output:
+//// outp:
 // one vertex
 out worldVertex
 {
@@ -31,26 +31,26 @@ out worldVertex
     vec3 tangent;
     vec3 bitangent;
     vec4 color;
-} output;
+} outp;
 
 void main()
 {
-    output.texCoord = gl_TessCoord.x * input[0].texCoord
-                    + gl_TessCoord.y * input[1].texCoord
-                    + gl_TessCoord.z * input[2].texCoord;
-    output.normal = gl_TessCoord.x * input[0].normal
-                    + gl_TessCoord.y * input[1].normal
-                    + gl_TessCoord.z * input[2].normal;
-    output.position = gl_TessCoord.x * input[0].position
-                    + gl_TessCoord.y * input[1].position
-                    + gl_TessCoord.z * input[2].position + output.normal * texture(heightTex, output.texCoord).r * heightScale;
-    output.tangent = gl_TessCoord.x * input[0].tangent
-                    + gl_TessCoord.y * input[1].tangent
-                    + gl_TessCoord.z * input[2].tangent;
-    output.bitangent = gl_TessCoord.x * input[0].bitangent
-                    + gl_TessCoord.y * input[1].bitangent
-                    + gl_TessCoord.z * input[2].bitangent;
-    output.color = gl_TessCoord.x * input[0].color
-                    + gl_TessCoord.y * input[1].color
-                    + gl_TessCoord.z * input[2].color;
+    outp.texCoord = gl_TessCoord.x * inp[0].texCoord
+                    + gl_TessCoord.y * inp[1].texCoord
+                    + gl_TessCoord.z * inp[2].texCoord;
+    outp.normal = gl_TessCoord.x * inp[0].normal
+                    + gl_TessCoord.y * inp[1].normal
+                    + gl_TessCoord.z * inp[2].normal;
+    outp.position = gl_TessCoord.x * inp[0].position
+                    + gl_TessCoord.y * inp[1].position
+                    + gl_TessCoord.z * inp[2].position + outp.normal * texture(heightTex, outp.texCoord).r * heightScale;
+    outp.tangent = gl_TessCoord.x * inp[0].tangent
+                    + gl_TessCoord.y * inp[1].tangent
+                    + gl_TessCoord.z * inp[2].tangent;
+    outp.bitangent = gl_TessCoord.x * inp[0].bitangent
+                    + gl_TessCoord.y * inp[1].bitangent
+                    + gl_TessCoord.z * inp[2].bitangent;
+    outp.color = gl_TessCoord.x * inp[0].color
+                    + gl_TessCoord.y * inp[1].color
+                    + gl_TessCoord.z * inp[2].color;
 }

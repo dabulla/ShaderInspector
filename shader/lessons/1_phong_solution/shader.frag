@@ -1,6 +1,6 @@
 #version 400
 
-//input
+//inp
 // (everything in 'view space')
 in screenSpaceData
 {
@@ -9,9 +9,9 @@ in screenSpaceData
     vec3 worldPos;
     vec4 color;
     vec2 texCoord;
-} input;
+} inp;
 
-// output
+// outp
 out vec4 out_Color;
 
 // uniforms
@@ -35,7 +35,7 @@ subroutine uniform colorLookupType colorMode;
 
 void main(void)
 {
-    out_Color = colorMode( input.texCoord );
+    out_Color = colorMode( inp.texCoord );
 }
 
 vec4 phong(vec3 lightDirection, vec3 pos, vec3 normal, vec2 uv)
@@ -65,7 +65,7 @@ vec4 phong(vec3 lightDirection, vec3 pos, vec3 normal, vec2 uv)
 subroutine(colorLookupType)
 vec4 simpleLightOnly(vec2 uv)
 {
-    return input.color;
+    return inp.color;
 }
 
 subroutine(colorLookupType)
@@ -86,8 +86,8 @@ vec4 phongShading(vec2 uv)
     // since varyings are in view space, light
     // has do be transformed to view space too
     return phong( normalize(modelViewNormal * lightDir),
-                  input.position,
-                  normalize(input.normal),
+                  inp.position,
+                  normalize(inp.normal),
                   uv);
 }
 

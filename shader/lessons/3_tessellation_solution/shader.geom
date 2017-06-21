@@ -11,7 +11,7 @@ in worldVertex
     vec3 tangent;
     vec3 bitangent;
     vec4 color;
-} input[];
+} inp[];
 
 out screenSpaceData
 {
@@ -20,7 +20,7 @@ out screenSpaceData
     vec4 color;
     vec2 texCoord;
     noperspective vec3 edgeDistance;
-} output;
+} outp;
 
 uniform mat4 mvp;
 uniform mat4 modelView;
@@ -61,17 +61,17 @@ vec3[3] calcEdgeDistances(vec4 clipSpace0, vec4 clipSpace1, vec4 clipSpace2)
 void main(void)
 {
 //    //custom backface culling
-//    vec4 posTrans = modelView * vec4(input[0].position, 1.0);
+//    vec4 posTrans = modelView * vec4(inp[0].position, 1.0);
 //    vec3 posCamSpace = posTrans.xyz/posTrans.w;
-//    if(dot(normalize( modelViewNormal * input[0].normal), normalize(-posCamSpace)) < 0.0)
+//    if(dot(normalize( modelViewNormal * inp[0].normal), normalize(-posCamSpace)) < 0.0)
 //    {
 //        return;
 //    }
 
     vec4 positionClipSpace[3];
-    positionClipSpace[0] = mvp * vec4(input[0].position, 1.0);
-    positionClipSpace[1] = mvp * vec4(input[1].position, 1.0);
-    positionClipSpace[2] = mvp * vec4(input[2].position, 1.0);
+    positionClipSpace[0] = mvp * vec4(inp[0].position, 1.0);
+    positionClipSpace[1] = mvp * vec4(inp[1].position, 1.0);
+    positionClipSpace[2] = mvp * vec4(inp[2].position, 1.0);
 
     vec3 edgeDists[] = calcEdgeDistances( positionClipSpace[0],
                                         positionClipSpace[1],
@@ -79,11 +79,11 @@ void main(void)
 
     for(int i=0 ; i<3 ; ++i)
     {
-        output.normal = modelViewNormal * input[i].normal;
-        output.positionViewSpace = (modelView * vec4(input[i].position, 1.0)).xyz;
-        output.color = input[i].color;
-        output.texCoord = input[i].texCoord;
-        output.edgeDistance = edgeDists[i];
+        outp.normal = modelViewNormal * inp[i].normal;
+        outp.positionViewSpace = (modelView * vec4(inp[i].position, 1.0)).xyz;
+        outp.color = inp[i].color;
+        outp.texCoord = inp[i].texCoord;
+        outp.edgeDistance = edgeDists[i];
         //gl_Position = gl_in[i].gl_Position; // would also work
         gl_Position = positionClipSpace[i];
         EmitVertex();

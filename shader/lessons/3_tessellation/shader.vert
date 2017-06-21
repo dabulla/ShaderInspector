@@ -1,13 +1,13 @@
 #version 400
 
-// input
+// inp
 in vec3 vertexPosition;
 in vec3 vertexNormal;
 in vec2 vertexTexCoord;
 in vec3 vertexTangent;
 in vec3 vertexBitangent;
 
-// output
+// outp
 out worldVertex
 {
     vec3 position;
@@ -16,7 +16,7 @@ out worldVertex
     vec3 tangent;
     vec3 bitangent;
     vec4 color;
-} output;
+} outp;
 
 // uniforms
 uniform mat4x4 mvp;
@@ -29,12 +29,12 @@ uniform vec3 lightDir;
 void main(void)
 {
     gl_Position = mvp * vec4(vertexPosition, 1.0);
-    output.position = vertexPosition;
-    output.texCoord = vertexTexCoord;
-    output.normal = vertexNormal;
-    output.tangent = vertexTangent;
-    output.bitangent = vertexBitangent;
+    outp.position = vertexPosition;
+    outp.texCoord = vertexTexCoord;
+    outp.normal = vertexNormal;
+    outp.tangent = vertexTangent;
+    outp.bitangent = vertexBitangent;
 
     float lit = dot(normalize(vertexNormal), normalize(lightDir)) * .5 + .5;
-    output.color = vec4(lit, lit, lit, 1.0);
+    outp.color = vec4(lit, lit, lit, 1.0);
 }
